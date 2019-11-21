@@ -16,8 +16,8 @@ End Balance | The end balance in Euros
 
 ## Output
 There are two validations:
-all transaction references should be unique
-the end balance needs to be validated
+     * all transaction references should be unique
+	* the end balance needs to be validated
 At the end of the processing, a report needs to be created which will display both the transaction reference and description of each of the failed records.
 
 # Steps to run the application:
