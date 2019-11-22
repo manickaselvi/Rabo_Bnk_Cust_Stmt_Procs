@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +41,8 @@ public class RBStatementProcessController {
 	@Autowired
 	private ExtractorService extractorService;
 	
+	Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	/**
 	 * @param multipartFile
 	 * @return
@@ -47,6 +51,7 @@ public class RBStatementProcessController {
 	@PostMapping(value = "/statmentProcessor")
 	@ResponseBody
 	public ResponseEntity<StatementProcessResponse> raboStatementProcess(@RequestParam("file") MultipartFile multipartFile) throws Exception {
+		logger.info("RBStatementProcessController : Customer Statement Process -->> Starts");
 		StatementProcessResponse stmtProcessResponse = new StatementProcessResponse();
 		if (!multipartFile.isEmpty()) {
 			if (multipartFile.getContentType().equalsIgnoreCase(RBStatementProcessConstants.FILE_TYPE_CSV)) {
@@ -67,6 +72,7 @@ public class RBStatementProcessController {
 			stmtProcessResponse.setResponseCode(RBStatementProcessConstants.HTTP_CODE_INVALID_INPUT);
 			stmtProcessResponse.setResponseMessage(RBStatementProcessConstants.INVALID_INPUT);
 		}
+		logger.info("RBStatementProcessController : Customer Statement Process -->> Ends");
 		return new ResponseEntity<StatementProcessResponse>(stmtProcessResponse, HttpStatus.OK);
 	} 
 
@@ -75,6 +81,7 @@ public class RBStatementProcessController {
 	 * @param stmtProcessResponse
 	 */
 	private void validateRecords(List<Record> extractedRecords, StatementProcessResponse stmtProcessResponse) {
+		logger.info("RBStatementProcessController : Validation Started");
 		Map<String, List<ResultRecord>> errorRecordsMap = new HashMap<>();
 		List<ResultRecord> faildRdsByRef = validatorService.getDuplicateRecordsByRef(extractedRecords);
 		List<ResultRecord> faildRdsByEndBal = validatorService.getEndBalanceErrorRecords(extractedRecords);
@@ -102,6 +109,7 @@ public class RBStatementProcessController {
 	@ExceptionHandler(Exception.class)
 	@ResponseBody
 	public final ResponseEntity<StatementProcessResponse> handleExceptions(Exception ex, WebRequest request) {
+		logger.info("ALERT-->>Internal Server Error");
 		StatementProcessResponse stmtProcessResponse = new StatementProcessResponse();
 		stmtProcessResponse.setResponseCode(RBStatementProcessConstants.HTTP_CODE_ERROR);
 		stmtProcessResponse.setResponseMessage(RBStatementProcessConstants.UNEXPECTED_SERVER_ERROR);
