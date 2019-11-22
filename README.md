@@ -26,7 +26,7 @@ At the end of the processing, a report needs to be created which will display bo
 https://github.com/manickaselvi/Rabo_Bnk_Cust_Stmt_Procs.git
 
 2.	Run maven command to install dependency.
-3.	Run the project by using Spring Boot App with embedded tomcat.
+3.	Run the project by using Spring Boot App with embedded tomcat. (Or Just Run the RaboBnkCustStmtProcessorApplication.java)
 4.	This Web service application have one active service to process Csv/Xml files. please find service url below,
 
 http://localhost:8085/rabobank/statmentProcessor
