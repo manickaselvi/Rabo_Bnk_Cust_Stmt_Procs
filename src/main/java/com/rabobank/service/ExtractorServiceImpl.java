@@ -9,6 +9,8 @@ import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.opencsv.CSVReader;
@@ -24,12 +26,15 @@ import com.rabobank.model.Records;
 @Service	
 public class ExtractorServiceImpl implements ExtractorService {
 
+	Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	/**
 	 * This method maps the column id of csv file to the java bean property.
 	 * 
 	 * @return List<Records>
 	 */
 	public List<Record> extractStatmentFromCSV(File file) throws Exception {
+		logger.info("ExtractorServiceImpl : extractStatmentFromCSV() -->> Starts");
 		HeaderColumnNameTranslateMappingStrategy<Record> beanStrategy = new HeaderColumnNameTranslateMappingStrategy<Record>();
 		beanStrategy.setType(Record.class);
 
@@ -45,8 +50,8 @@ public class ExtractorServiceImpl implements ExtractorService {
 
 		CsvToBean<Record> csvToBean = new CsvToBean<Record>();
 		CSVReader reader = new CSVReader(new FileReader(file));
-		List<Record> records = csvToBean.parse(beanStrategy, reader); 
-		
+		List<Record> records = csvToBean.parse(beanStrategy, reader);
+		logger.info("ExtractorServiceImpl : extractStatmentFromCSV() -->> Ends");
 		return records;
 	}
 
@@ -56,12 +61,12 @@ public class ExtractorServiceImpl implements ExtractorService {
 	 * @return List<Records>
 	 */
 	public List<Record> extractStatmentFromXML(File file) throws Exception {
-		  
+		logger.info("ExtractorServiceImpl : extractStatmentFromXML() -->> Starts");
         JAXBContext jaxbContext = JAXBContext.newInstance(Records.class);  
    
         Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();  
         Records rootRecord= (Records) jaxbUnmarshaller.unmarshal(file);  
-
+		logger.info("ExtractorServiceImpl : extractStatmentFromXML() -->> Ends");
 		return rootRecord.getRecord();
 	}
 
