@@ -22,6 +22,6 @@ public class RBStatementProcessConstants {
 	public static final String ERROR_RECORDMAP_KEY_REFERENCE = "Validation failed by Reference";
 	public static final String ERROR_RECORDMAP_KEY_END_BAL = "Validation failed by End Balance";
 	
-	
-
+	public static final String FILE_FORMAT_CSV = ".csv";
+	public static final String FILE_FORMAT_XML = ".xml";
 }
