@@ -1,5 +1,7 @@
 package com.rabobank.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,10 +10,15 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.rabobank.constants.RBStatementProcessConstants;
+import com.rabobank.exceptions.RaboBankStmtProcessException;
 import com.rabobank.model.Record;
 import com.rabobank.model.ResultRecord;
+import com.rabobank.model.StatementProcessResponse;
 
 /**
  * This ServiceImpl validates to find duplicate records based on transaction
@@ -24,12 +31,17 @@ import com.rabobank.model.ResultRecord;
 public class ValidatorServiceImpl implements ValidatorService {
 	
 	Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+
+	@Autowired
+	private ExtractorService extractorService;
+	
 
 	/**
 	 * @return List<ResultRecord> to get duplicate records form given input list.
 	 */
 	public List<ResultRecord> getDuplicateRecordsByRef(List<Record> records) {
-		logger.info("ExtractorServiceImpl : getDuplicateRecordsByRef() -->> Starts");
+		logger.info("ValidatorServiceImpl : getDuplicateRecordsByRef() -->> Starts");
 		Map<Integer, Record> uniqueRecords = new HashMap<Integer, Record>();
 		List<ResultRecord> duplicateRecords = new ArrayList<ResultRecord>();
 		records.stream().filter(Objects::nonNull).forEach(record -> {
@@ -48,7 +60,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 					finalDuplicateRecords.add(createResultRecord(uniqueRecords.get(dupRecord.getTransactionRef())));
 					uniqueRecords.remove(dupRecord.getTransactionRef());
 				});
-		logger.info("ExtractorServiceImpl : getDuplicateRecordsByRef() -->> Ends");
+		logger.info("ValidatorServiceImpl : getDuplicateRecordsByRef() -->> Ends");
 		return finalDuplicateRecords;
 	}
 	
@@ -57,7 +69,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 	 *         endbalance then that list will be returned.
 	 */
 	public List<ResultRecord> getEndBalanceErrorRecords(List<Record> records) {
-		logger.info("ExtractorServiceImpl : getEndBalanceErrorRecords() -->> Starts");
+		logger.info("ValidatorServiceImpl : getEndBalanceErrorRecords() -->> Starts");
 		List<ResultRecord> endBalanceErrorRecords = new ArrayList<ResultRecord>();
 		records.stream().filter(Objects::nonNull)
 				.filter(record -> Math.round(
@@ -65,7 +77,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 				.forEach(record -> {
 					endBalanceErrorRecords.add(createResultRecord(record));
 				});
-		logger.info("ExtractorServiceImpl : getEndBalanceErrorRecords() -->> Ends");
+		logger.info("ValidatorServiceImpl : getEndBalanceErrorRecords() -->> Ends");
 	return endBalanceErrorRecords;
 	}
 
@@ -82,4 +94,88 @@ public class ValidatorServiceImpl implements ValidatorService {
 		return resRcd;
 	}
 	
+	
+
+	/**
+	 * @param extractedRecords
+	 * @param stmtProcessResponse
+	 */
+	public Map<String, List<ResultRecord>> getErrorRecordsMap(List<Record> extractedRecords) {
+		logger.info("ValidatorServiceImpl : getErrorRecordsMap()-->> Starts");
+		Map<String, List<ResultRecord>> errorRecordsMap = new HashMap<>();
+		List<ResultRecord> faildRecordsByTransactionRef = getDuplicateRecordsByRef(extractedRecords);
+		List<ResultRecord> faildRecordsByEndBal = getEndBalanceErrorRecords(extractedRecords);
+		if(!faildRecordsByTransactionRef.isEmpty()) {
+			errorRecordsMap.put(RBStatementProcessConstants.ERROR_RECORDMAP_KEY_REFERENCE, faildRecordsByTransactionRef);
+		} 
+		if(!faildRecordsByEndBal.isEmpty()) {
+			errorRecordsMap.put(RBStatementProcessConstants.ERROR_RECORDMAP_KEY_END_BAL, faildRecordsByEndBal);
+		}
+		return errorRecordsMap;
+	}
+	
+	
+	/* (non-Javadoc)
+	 * This method extract records from csv or xml to get error records then form and send response
+	 * 
+	 * @see com.rabobank.service.ValidatorService#validateFile(org.springframework.web.multipart.MultipartFile)
+	 */
+	public StatementProcessResponse validateFile(MultipartFile multipartFile) throws RaboBankStmtProcessException {
+		logger.info("ValidatorServiceImpl : validateFile()-->> Starts");
+		Integer responseCode= null;
+		String responseMessage="";
+		Map<String, List<ResultRecord>> errorRecordsMap = new HashMap<>();
+		try {
+			if (!multipartFile.isEmpty()) {
+				if (multipartFile.getContentType().equalsIgnoreCase(RBStatementProcessConstants.FILE_TYPE_CSV)) {
+					File csvFile = new File(multipartFile.getOriginalFilename());
+					multipartFile.transferTo(csvFile);
+					List<Record> extractedRecords = extractorService.extractStatmentFromCSV(csvFile);
+					errorRecordsMap =getErrorRecordsMap(extractedRecords);
+				} else if (multipartFile.getContentType().equalsIgnoreCase(RBStatementProcessConstants.FILE_TYPE_XML)) {
+					File xmlFile = new File(multipartFile.getOriginalFilename());
+					multipartFile.transferTo(xmlFile);
+					List<Record> extractedRecords = extractorService.extractStatmentFromXML(xmlFile);
+					errorRecordsMap=getErrorRecordsMap(extractedRecords);
+				} else {
+					responseCode = RBStatementProcessConstants.HTTP_CODE_INVALID_INPUT;
+					responseMessage = RBStatementProcessConstants.UNSUPPORTED_FILE_FORMAT;
+				}
+			} else {
+				responseCode =RBStatementProcessConstants.HTTP_CODE_INVALID_INPUT;
+				responseMessage =RBStatementProcessConstants.INVALID_INPUT;
+			}
+		} catch(RaboBankStmtProcessException | IllegalStateException | IOException ex){
+			logger.debug("Exception in ValidatorServiceImpl:validateFile() ", ex);	
+			throw new RaboBankStmtProcessException(ex.getMessage());
+		}
+		logger.info("ValidatorServiceImpl : validateFile()-->> Ends");
+
+		return formStatementProcessResponse(responseCode, responseMessage, errorRecordsMap);
+	}
+
+	
+	/**
+	 * @param responseCode
+	 * @param responseMessage
+	 * @param errorRecordsMap
+	 * @return
+	 */
+	private StatementProcessResponse formStatementProcessResponse(Integer responseCode, String responseMessage,Map<String, List<ResultRecord>> errorRecordsMap) {
+		logger.info("ValidatorServiceImpl : formStatementProcessResponse()-->> Starts");
+		StatementProcessResponse stmtProcessResponse = new StatementProcessResponse();
+		if (null !=errorRecordsMap && !errorRecordsMap.isEmpty()) {
+			responseCode =RBStatementProcessConstants.HTTP_CODE_SUCCESS;
+			responseMessage= RBStatementProcessConstants.VALIDATION_ERROR;
+			stmtProcessResponse.setRecordsMap(errorRecordsMap);
+		} else {
+			responseCode = responseCode != null ? responseCode :RBStatementProcessConstants.HTTP_CODE_SUCCESS ;
+			responseMessage=!responseMessage.isEmpty() ? responseMessage :RBStatementProcessConstants.VALIDATION_SUCCESS;
+		}
+		stmtProcessResponse.setResponseCode(responseCode);
+		stmtProcessResponse.setResponseMessage(responseMessage);	
+		logger.info("ValidatorServiceImpl : formStatementProcessResponse()-->> Ends");
+		return stmtProcessResponse;
+			
+	}
 }
