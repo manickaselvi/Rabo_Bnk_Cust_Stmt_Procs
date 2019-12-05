@@ -111,6 +111,7 @@ public class StatementProcessResponse {
 		} else if (!responseMessage.equals(other.responseMessage)) {
 			return false;
 		}
+		return true;
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
