@@ -55,7 +55,7 @@ public class RBStatementProcessController {
 	@ResponseBody
 	public ResponseEntity<StatementProcessResponse> handleExceptions() {
 		logger.info("ALERT-->>Internal Server Error");
-		return new ResponseEntity<StatementProcessResponse>(
+		return new ResponseEntity<>(
 				new StatementProcessResponse(RBStatementProcessConstants.UNEXPECTED_SERVER_ERROR,
 						RBStatementProcessConstants.HTTP_CODE_ERROR, null),
 				HttpStatus.INTERNAL_SERVER_ERROR);
