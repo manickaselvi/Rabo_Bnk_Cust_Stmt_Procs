@@ -42,8 +42,8 @@ public class ValidatorServiceImpl implements ValidatorService {
 	 */
 	public List<ResultRecord> getDuplicateRecordsByRef(List<Record> records) {
 		logger.info("ValidatorServiceImpl : getDuplicateRecordsByRef() -->> Starts");
-		Map<Integer, Record> uniqueRecords = new HashMap<Integer, Record>();
-		List<ResultRecord> duplicateRecords = new ArrayList<ResultRecord>();
+		Map<Integer, Record> uniqueRecords = new HashMap<>();
+		List<ResultRecord> duplicateRecords = new ArrayList<>();
 		records.stream().filter(Objects::nonNull).forEach(record -> {
 			if (uniqueRecords.containsKey(record.getTransactionRef())) {
 				duplicateRecords.add(createResultRecord(record));
@@ -52,7 +52,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 			}
 		});
 
-		List<ResultRecord> finalDuplicateRecords = new ArrayList<ResultRecord>();
+		List<ResultRecord> finalDuplicateRecords = new ArrayList<>();
 		finalDuplicateRecords.addAll(duplicateRecords);
 
 		duplicateRecords.stream().filter(Objects::nonNull)
@@ -70,13 +70,11 @@ public class ValidatorServiceImpl implements ValidatorService {
 	 */
 	public List<ResultRecord> getEndBalanceErrorRecords(List<Record> records) {
 		logger.info("ValidatorServiceImpl : getEndBalanceErrorRecords() -->> Starts");
-		List<ResultRecord> endBalanceErrorRecords = new ArrayList<ResultRecord>();
+		List<ResultRecord> endBalanceErrorRecords = new ArrayList<>();
 		records.stream().filter(Objects::nonNull)
 				.filter(record -> Math.round(
 						(record.getStartBalance() - record.getMutation()) - Math.round(record.getEndBalance())) != 0)
-				.forEach(record -> {
-					endBalanceErrorRecords.add(createResultRecord(record));
-				});
+				.forEach(record -> endBalanceErrorRecords.add(createResultRecord(record)));
 		logger.info("ValidatorServiceImpl : getEndBalanceErrorRecords() -->> Ends");
 	return endBalanceErrorRecords;
 	}
@@ -146,8 +144,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 				responseMessage =RBStatementProcessConstants.INVALID_INPUT;
 			}
 		} catch(RaboBankStmtProcessException | IllegalStateException | IOException ex){
-			logger.debug("Exception in ValidatorServiceImpl:validateFile() ", ex);	
-			throw new RaboBankStmtProcessException(ex.getMessage());
+			throw new RaboBankStmtProcessException("Exception in ValidatorServiceImpl:validateFile()", ex);
 		}
 		logger.info("ValidatorServiceImpl : validateFile()-->> Ends");
 
