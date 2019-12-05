@@ -84,26 +84,33 @@ public class StatementProcessResponse {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (!(obj instanceof StatementProcessResponse)) {
 			return false;
+		}
 		StatementProcessResponse other = (StatementProcessResponse) obj;
 		if (recordsMap == null) {
-			if (other.recordsMap != null)
+			if (other.recordsMap != null) {
 				return false;
-		} else if (!recordsMap.equals(other.recordsMap))
+			}
+		} else if (!recordsMap.equals(other.recordsMap)) {
 			return false;
-		if (responseCode != other.responseCode)
+		}
+		if (responseCode != other.responseCode) {
 			return false;
+		}
 		if (responseMessage == null) {
-			if (other.responseMessage != null)
+			if (other.responseMessage != null) {
 				return false;
-		} else if (!responseMessage.equals(other.responseMessage))
+			}
+		} else if (!responseMessage.equals(other.responseMessage)) {
 			return false;
-		return true;
+		}
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
