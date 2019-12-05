@@ -42,10 +42,10 @@ public class ExtractorServiceImpl implements ExtractorService {
 		logger.info("ExtractorServiceImpl : extractStatmentFromCSV() -->> Starts");
 		List<Record> records = new ArrayList<>();
 		try {
-			HeaderColumnNameTranslateMappingStrategy<Record> beanStrategy = new HeaderColumnNameTranslateMappingStrategy<Record>();
+			HeaderColumnNameTranslateMappingStrategy<Record> beanStrategy = new HeaderColumnNameTranslateMappingStrategy<>();
 			beanStrategy.setType(Record.class);
 	
-			Map<String, String> columnMapping = new HashMap<String, String>();
+			Map<String, String> columnMapping = new HashMap<>();
 			columnMapping.put("Reference", "transactionRef");
 			columnMapping.put("AccountNumber", "accountNumber");
 			columnMapping.put("Description", "description");
@@ -55,12 +55,11 @@ public class ExtractorServiceImpl implements ExtractorService {
 	
 			beanStrategy.setColumnMapping(columnMapping);
 	
-			CsvToBean<Record> csvToBean = new CsvToBean<Record>();
+			CsvToBean<Record> csvToBean = new CsvToBean<>();
 			CSVReader reader = new CSVReader(new FileReader(file));
 			records = csvToBean.parse(beanStrategy, reader);
 		}catch(FileNotFoundException ex) {
-			logger.debug("Exception in ExtractorServiceImpl:extractStatmentFromCSV() ", ex);	
-			throw new RaboBankStmtProcessException(ex.getMessage());
+			throw new RaboBankStmtProcessException("Exception in ExtractorServiceImpl:extractStatmentFromCSV()",ex);
 		}
 		logger.info("ExtractorServiceImpl : extractStatmentFromCSV() -->> Ends");
 		return records;
@@ -80,8 +79,7 @@ public class ExtractorServiceImpl implements ExtractorService {
 			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 			rootRecord = (Records) jaxbUnmarshaller.unmarshal(file);
 		} catch (JAXBException ex) {
-			logger.debug("Exception in ExtractorServiceImpl: extractStatmentFromXML() ", ex);
-			throw new RaboBankStmtProcessException(ex.getMessage());
+			throw new RaboBankStmtProcessException("Exception in ExtractorServiceImpl: extractStatmentFromXML()",ex);
 		}
 		logger.info("ExtractorServiceImpl : extractStatmentFromXML() -->> Ends");
 		return rootRecord.getRecord();
