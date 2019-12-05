@@ -59,7 +59,7 @@ public class ExtractorServiceImpl implements ExtractorService {
 			CSVReader reader = new CSVReader(new FileReader(file));
 			records = csvToBean.parse(beanStrategy, reader);
 		}catch(FileNotFoundException ex) {
-			throw new RaboBankStmtProcessException("Exception in ExtractorServiceImpl:extractStatmentFromCSV()",ex);
+			throw new RaboBankStmtProcessException("Exception caught while extracting statement from CSV file",ex);
 		}
 		logger.info("ExtractorServiceImpl : extractStatmentFromCSV() -->> Ends");
 		return records;
@@ -79,7 +79,7 @@ public class ExtractorServiceImpl implements ExtractorService {
 			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 			rootRecord = (Records) jaxbUnmarshaller.unmarshal(file);
 		} catch (JAXBException ex) {
-			throw new RaboBankStmtProcessException("Exception in ExtractorServiceImpl: extractStatmentFromXML()",ex);
+			throw new RaboBankStmtProcessException("Exception caught while extracting statement from XML file",ex);
 		}
 		logger.info("ExtractorServiceImpl : extractStatmentFromXML() -->> Ends");
 		return rootRecord.getRecord();
