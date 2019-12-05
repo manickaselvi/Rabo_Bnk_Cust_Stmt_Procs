@@ -144,7 +144,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 				responseMessage =RBStatementProcessConstants.INVALID_INPUT;
 			}
 		} catch(RaboBankStmtProcessException | IllegalStateException | IOException ex){
-			throw new RaboBankStmtProcessException("Exception in ValidatorServiceImpl:validateFile()", ex);
+			throw new RaboBankStmtProcessException(ex.getMessage(), ex);
 		}
 		logger.info("ValidatorServiceImpl : validateFile()-->> Ends");
 
