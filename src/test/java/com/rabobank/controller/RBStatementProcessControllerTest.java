@@ -50,7 +50,7 @@ public class RBStatementProcessControllerTest {
 	 * @throws FileNotFoundException 
 	 */
 	@Test
-	public void raboStatementProcessTestCaseCsvFile() throws RaboBankStmtProcessException, FileNotFoundException, IOException {
+	public void raboStatementProcessTestCaseCsvFile() throws RaboBankStmtProcessException, IOException {
 		String fileName= processStatementFileName + RBStatementProcessConstants.FILE_FORMAT_CSV;
 		MockMultipartFile multipartFile = new MockMultipartFile("file",fileName, "multipart/form-data", new FileInputStream(new File(fileName)));
 		Mockito.when(validatorService.validateFile(multipartFile)).thenReturn(getStatementProcessResponseForCSVTestCase());
@@ -68,7 +68,7 @@ public class RBStatementProcessControllerTest {
 	 * @throws FileNotFoundException 
 	 */
 	@Test
-	public void raboStatementProcessTestCaseXmlFile() throws RaboBankStmtProcessException, FileNotFoundException, IOException {
+	public void raboStatementProcessTestCaseXmlFile() throws RaboBankStmtProcessException, IOException {
 		String fileName= processStatementFileName + RBStatementProcessConstants.FILE_FORMAT_XML;
 		MockMultipartFile multipartFile = new MockMultipartFile("file", fileName, "multipart/form-data", new FileInputStream(new File(fileName)));
 		Mockito.when(validatorService.validateFile(multipartFile)).thenReturn(getStatementProcessResponseForXMLTestCase());
