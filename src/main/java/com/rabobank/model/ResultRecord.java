@@ -68,21 +68,24 @@ public class ResultRecord {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (!(obj instanceof ResultRecord)) {
 			return false;
+		}
 		ResultRecord other = (ResultRecord) obj;
 		if (description == null) {
-			if (other.description != null)
+			if (other.description != null) {
 				return false;
-		} else if (!description.equals(other.description))
+			}
+		} else if (!description.equals(other.description)) {
 			return false;
-		if (transactionRef != other.transactionRef)
-			return false;
-		return true;
+		}
+		return transactionRef == other.transactionRef;
 	}
 
 	/* (non-Javadoc)
