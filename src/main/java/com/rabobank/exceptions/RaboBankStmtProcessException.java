@@ -11,20 +11,12 @@ public class RaboBankStmtProcessException extends Exception {
 	public RaboBankStmtProcessException() {
 		super();
 	}
-
-	public RaboBankStmtProcessException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
+	
+	/**
+	 * @param message
+	 * @param ex
+	*/
 	public RaboBankStmtProcessException(String message, Exception ex) {
 		super(message, ex);
-	}
-
-	public RaboBankStmtProcessException(Throwable cause) {
-		super(cause);
-	}
-
-	public RaboBankStmtProcessException(String message) {
-		super(message);
 	}
 }
